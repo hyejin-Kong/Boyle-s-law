@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>기체의 압력과 부피 관계</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f9f7;--card:#fff;--ink:#1d2b29;--sub:#58706b;--line:#cfe3de;--teal:#0fa88f;--tb:#dff3ee;--yel:#ffc60a;--ok:#13805f;--bad:#c0392b;--on:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a18;--card:#172623;--ink:#e6f2ef;--sub:#9db8b2;--line:#2c4540;--teal:#2fc7ad;--tb:#1d3833;--ok:#4cd2a3;--bad:#ff8c7d;--on:#0b1614}}
+:root[data-theme="dark"]{--bg:#0f1a18;--card:#172623;--ink:#e6f2ef;--sub:#9db8b2;--line:#2c4540;--teal:#2fc7ad;--tb:#1d3833;--ok:#4cd2a3;--bad:#ff8c7d;--on:#0b1614}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 'Noto Sans KR','Malgun Gothic',sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:16px}
+h1{font-size:clamp(24px,5vw,34px);font-weight:900;margin:4px 0 2px;letter-spacing:-.02em}
+h1 span{color:var(--teal)}
+.lead{margin:0 0 14px;color:var(--sub)}
+.grid{display:grid;grid-template-columns:minmax(320px,380px) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{min-width:0;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px}
+canvas{width:100%;height:auto;display:block;border-radius:12px;background:var(--tb)}
+.cap{font-size:13px;color:var(--sub);margin:6px 2px 10px}
+.ctl{display:flex;gap:8px;align-items:center}
+.ctl b{flex:1;text-align:center;font-size:18px}
+button{font:inherit;cursor:pointer;border:2px solid var(--teal);background:var(--card);color:var(--ink);border-radius:12px;padding:8px 14px;font-weight:700}
+button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.pri{background:var(--teal);color:var(--on)}
+.ctl button{padding:12px 16px;font-size:17px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tabs button{flex:1}
+.tabs button[aria-selected=true]{background:var(--teal);color:var(--on)}
+.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.row span:first-child{color:var(--sub)}
+.row b{font-variant-numeric:tabular-nums}
+.bar{height:10px;border-radius:6px;background:var(--tb);margin-top:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--teal);width:50%}
+.st{margin:12px 0;padding:10px 12px;border-radius:12px;background:var(--tb);font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+th,td{padding:6px;text-align:center;border-bottom:1px solid var(--line)}
+th{color:var(--sub);font-weight:700}
+.q{font-size:18px;font-weight:700;margin:6px 0 10px}
+.it{display:flex;flex-wrap:wrap;gap:6px 10px;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.ch{display:flex;gap:6px}
+.ch button{padding:6px 10px;font-size:14px}
+.ch button.on{background:var(--teal);color:var(--on)}
+.ch button.ok{background:var(--ok);border-color:var(--ok);color:var(--on)}
+.ch button.no{background:var(--bad);border-color:var(--bad);color:var(--on)}
+.fb{margin:10px 0;padding:10px 12px;border-left:5px solid var(--yel);background:var(--tb);border-radius:8px}
+.hd{display:flex;justify-content:space-between;color:var(--sub);font-weight:700}
+.big{font-size:40px;font-weight:900;color:var(--teal)}
+.hist{display:flex;gap:6px;align-items:flex-end;height:80px;margin:8px 0}
+.hist i{flex:1;background:var(--teal);border-radius:4px 4px 0 0;min-width:10px;position:relative}
+.hist i::after{content:attr(data-v);position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:11px;font-style:normal;color:var(--sub)}
+.bl{padding:2px 10px;margin:0 3px;min-width:84px;border-style:dashed;font-size:inherit}.bl.on{border-style:solid;background:var(--tb)}.bl.ok{background:var(--ok);border-color:var(--ok);color:var(--on)}.bl.no{background:var(--bad);border-color:var(--bad);color:var(--on)}.bl:disabled{opacity:1}.bl.dragover{background:var(--yel);color:#1d2b29}
+.ex{line-height:2.4;margin:8px 0}.opt{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}.op{display:block;padding:6px;text-align:left;font-weight:400}.op b{display:block;margin-bottom:2px}.op.ok{border-color:var(--ok);background:var(--tb)}.op.no{border-color:var(--bad)}.op:disabled{opacity:1}.ch button:disabled.ok,.ch button:disabled.no{opacity:1}.bank{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.chip{cursor:grab;border-radius:20px}.chip.on{background:var(--teal);color:var(--on)}
+</style></head><body>
+<div class="wrap">
+<h1>기체의 압력과 <span>부피 관계</span></h1>
+<p class="lead">일정한 온도에서 일정한 양의 기체에 작용하는 압력을 바꾸면 기체의 부피와 압력은 어떻게 될까?</p>
+<div class="grid">
+<div class="card">
+<canvas id="cv" aria-label="추를 올려 기체에 작용하는 압력을 조절하는 실린더"></canvas>
+<div class="cap">| 그림 | 기체의 압력 변화에 따른 입자 운동 (붉은 구슬: 기체 입자)</div>
+<div class="ctl"><button id="mn">추 빼기</button><b id="wn">추 2개</b><button id="pl" class="pri">추 올리기</button></div>
+</div>
+<div class="card">
+<div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="sim">탐구 시뮬레이션</button><button role="tab" aria-selected="false" data-tab="game">챌린지</button></div>
+<div id="sim">
+<div class="row"><span>기체에 작용하는 압력</span><b id="r1"></b></div>
+<div class="row"><span>용기 속 기체의 부피</span><b id="r2"></b></div>
+<div class="row"><span>용기 속 기체의 압력</span><b id="r3"></b></div>
+<div class="row"><span>입자 수</span><b>변화 없음 (14개)</b></div>
+<div class="row"><span>입자의 운동성</span><b>변화 없음 (온도 일정)</b></div>
+<div class="row" style="display:block"><span>입자 사이의 거리</span><div class="bar"><i id="b1"></i></div></div>
+<div class="row" style="display:block"><span>입자가 용기 벽에 충돌하는 횟수</span><div class="bar"><i id="b2"></i></div></div>
+<div class="st" id="stt"></div>
+<b>측정값 기록</b> <span class="cap">(부피가 멈추면 자동 기록)</span>
+<table><thead><tr><th>추(개)</th><th>기체의 압력(기압)</th><th>기체의 부피(mL)</th></tr></thead><tbody id="tb"></tbody></table>
+<p class="cap">생각해 보기: 추를 올리거나 뺄 때, 입자 사이의 거리와 용기 벽에 충돌하는 횟수는 각각 어떻게 될까? 기록한 값에서 기체의 압력과 부피 사이의 관계를 찾아보자.</p>
+</div>
+<div id="game" hidden></div>
+<div id="smp" hidden><div id="s1"></div><hr style="border:0;border-top:2px dashed var(--line);margin:18px 0"><div id="s2"></div></div>
+</div></div></div>
+<script>
+const $=s=>document.querySelector(s),cv=$('#cv'),ctx=cv.getContext('2d');
+cv.width=720;cv.height=960;ctx.scale(2,2);
+const K=60,BASE=430,HMAX=280,L=78,R=282,N=14,SP=150,CX=180;
+const Pe=m=>1+.5*m,Vt=m=>K/Pe(m),cl=(x,a,b)=>Math.max(a,Math.min(b,x));
+let n=2,V=Vt(2),locked=false,rec={},hits=[],rate=0,last=performance.now();
+const ps=[...Array(N)].map(()=>{const a=Math.random()*6.28;return{x:L+10+Math.random()*(R-L-20),y:BASE-10-Math.random()*60,vx:Math.cos(a)*SP,vy:Math.sin(a)*SP}});
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function draw(top){
+ctx.clearRect(0,0,360,480);
+rr(48,BASE,264,22,8);ctx.fillStyle='#c99a5b';ctx.fill();
+ctx.fillStyle='rgba(215,38,61,.10)';ctx.fillRect(L,top,R-L,BASE-top);
+ctx.beginPath();ctx.moveTo(L-4,130);ctx.lineTo(L-4,BASE);ctx.lineTo(R+4,BASE);ctx.lineTo(R+4,130);
+ctx.fillStyle='rgba(170,215,230,.22)';ctx.fillRect(L-4,130,R-L+8,BASE-130);
+ctx.strokeStyle='rgba(80,130,150,.95)';ctx.lineWidth=4;ctx.stroke();
+for(let i=0;i<n;i++){const ly=Math.floor(i/2),alone=(i===n-1&&n%2===1),x=alone?CX-35:CX+(i%2?3:-73),y=top-14-ly*30-26;
+const g=ctx.createLinearGradient(x,0,x+70,0);g.addColorStop(0,'#a97d1d');g.addColorStop(.4,'#f0cf6a');g.addColorStop(1,'#a97d1d');
+ctx.fillStyle=g;rr(x,y,70,26,4);ctx.fill();rr(x+28,y-8,14,9,3);ctx.fill()}
+const pg=ctx.createLinearGradient(0,top-14,0,top);pg.addColorStop(0,'#d5d9df');pg.addColorStop(1,'#8b929c');
+ctx.fillStyle=pg;rr(L-2,top-14,R-L+4,14,3);ctx.fill();
+for(const p of ps){ctx.strokeStyle='rgba(215,38,61,.4)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-p.vx*.07,p.y-p.vy*.07);ctx.stroke();
+const g=ctx.createRadialGradient(p.x-2,p.y-2,1,p.x,p.y,6);g.addColorStop(0,'#ff8a8a');g.addColorStop(1,'#a81428');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,5.5,0,7);ctx.fill()}
+ctx.strokeStyle='#58706b';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(324,top);ctx.lineTo(324,BASE);ctx.moveTo(318,top);ctx.lineTo(330,top);ctx.moveTo(318,BASE);ctx.lineTo(330,BASE);ctx.stroke();
+ctx.save();ctx.translate(344,(top+BASE)/2);ctx.rotate(-Math.PI/2);ctx.fillStyle='#58706b';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.fillText('부피 '+V.toFixed(1)+' mL',0,0);ctx.restore()}
+function frame(t){
+const dt=Math.min(.04,(t-last)/1000);last=t;
+V+=(Vt(n)-V)*Math.min(1,dt*3.2);if(Math.abs(Vt(n)-V)<.04)V=Vt(n);
+const top=BASE-V/K*HMAX;
+for(const p of ps){p.x+=p.vx*dt;p.y+=p.vy*dt;let h=0;
+if(p.x<L+5){p.x=L+5;p.vx=Math.abs(p.vx);h=1}if(p.x>R-5){p.x=R-5;p.vx=-Math.abs(p.vx);h=1}
+if(p.y<top+5){p.y=top+5;p.vy=Math.abs(p.vy);h=1}if(p.y>BASE-5){p.y=BASE-5;p.vy=-Math.abs(p.vy);h=1}
+if(h)hits.push(t)}
+while(hits.length&&hits[0]<t-1500)hits.shift();
+rate+=(hits.length/1.5-rate)*.1;
+draw(top);ui();requestAnimationFrame(frame)}
+let lastRec=-1;
+function ui(){
+const settled=Math.abs(Vt(n)-V)<.05;
+$('#wn').textContent='추 '+n+'개';
+$('#mn').disabled=locked||n<=0;$('#pl').disabled=locked||n>=6;
+$('#r1').textContent=Pe(n).toFixed(1)+' 기압';
+$('#r2').textContent=V.toFixed(1)+' mL';
+$('#r3').textContent=(K/V).toFixed(1)+' 기압';
+$('#b1').style.width=Math.sqrt(V/K)*100+'%';
+$('#b2').style.width=Math.min(100,rate/32*100)+'%';
+const d=Vt(n)-V;
+$('#stt').textContent=settled?'기체의 압력이 기체에 작용하는 압력과 같아져 부피 변화가 멈췄다.':(d<0?'기체의 부피가 줄어들고, 기체의 압력이 커지는 중…':'기체의 부피가 늘어나고, 기체의 압력이 작아지는 중…');
+if(settled&&!rec[n]){rec[n]=[Pe(n),Vt(n)];const rows=Object.keys(rec).sort((a,b)=>a-b).map(k=>`<tr><td>${k}</td><td>${rec[k][0].toFixed(1)}</td><td>${rec[k][1].toFixed(1)}</td></tr>`).join('');$('#tb').innerHTML=rows}}
+function step(d){if(locked)return;const m=cl(n+d,0,6);if(m===n)return;n=m;const q=g.q;if(g.mode==='play'&&q&&!q.res){if(q.t==='B')q.moves++;render()}}
+$('#mn').onclick=()=>step(-1);$('#pl').onclick=()=>step(1);
+/* ---------- 챌린지 ---------- */
+const lab={1:'증가','-1':'감소',0:'변화 없음'};
+const IT=[{k:'cnt',t:'입자 수',d:()=>0},{k:'ext',t:'기체에 작용하는 압력',d:s=>s},{k:'mv',t:'입자의 운동성',d:()=>0},{k:'dist',t:'입자 사이의 거리',d:s=>-s},{k:'hit',t:'입자가 용기 벽에 충돌하는 횟수',d:s=>s},{k:'vol',t:'기체의 부피',d:s=>-s},{k:'prs',t:'용기 속 기체의 압력',d:s=>s}];
+const ORD=['A','P','B','S','A'];
+const sh=a=>[...a].sort(()=>Math.random()-.5);
+const ORDK=['cnt','ext','vol','dist','hit','prs','mv'];
+function buildDeck(){
+const up=[],dn=[];for(let x=0;x<=6;x++)for(let y=0;y<=6;y++){const d=y-x;if(d>0&&d<=3)up.push([x,y]);if(d<0&&d>=-3)dn.push([x,y])}
+const pr=sh([sh(up)[0],sh(dn)[0]]),it=sh(IT),tr=[[it[0],it[1],it[3]],[it[2],it[4],it[5]]];
+const A=pr.map((p,i)=>({t:'A',n0:p[0],n1:p[1],s:p[1]>p[0]?1:-1,dd:Math.abs(p[1]-p[0]),its:[...IT].sort((a,b)=>ORDK.indexOf(a.k)-ORDK.indexOf(b.k)),ans:{},res:null}));
+const B=[sh([0,1,2,3,4,6])[0]].map(m=>{let n0;do{n0=ri(0,6)}while(n0===m);return{t:'B',kind:'vol',m,n0,moves:0,wrong:0,msg:'',res:null}});
+let ia=0;g.deck=ORD.map(t=>t==='A'?A[ia++]:t==='B'?B[0]:t==='P'?{t:'P',opts:sh(S1),a:null,res:null}:{t:'S',foot:Math.random()<.5,a:{},res:null})}
+let hist=[];try{hist=JSON.parse(localStorage.getItem('gasHist5')||'[]')}catch(e){}
+const g={mode:'intro',r:0,sc:0,q:null};
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function nextQ(){
+if(g.r>=5){g.mode='end';hist.push(g.sc);try{localStorage.setItem('gasHist5',JSON.stringify(hist))}catch(e){}return render()}
+g.q=g.deck[g.r];if(g.q.n0!==undefined){n=g.q.n0;V=Vt(n)}locked=false;render()}
+function submitA(){const q=g.q;let c=0;q.res=q.its.map(it=>{const ok=q.ans[it.k]===it.d(q.s);if(ok)c++;return ok});g.sc+=c*5;q.pts=c*5;q.f=mkFill('A',q.s>0);locked=true;render()}
+function checkB(){const q=g.q;if(n!==q.m){q.wrong++;const t=q.kind==='vol'?V>Vt(q.m):Pe(n)<Pe(q.m);q.msg=q.kind==='vol'?(Vt(n)>Vt(q.m)?'아직 부피가 너무 커. 기체의 부피를 줄이려면 기체에 작용하는 압력을 어떻게 해야 할까?':'부피가 너무 작아. 기체의 부피를 늘리려면 기체에 작용하는 압력을 어떻게 해야 할까?'):(Pe(n)<Pe(q.m)?'기체의 압력이 아직 작아. 기체에 작용하는 압력을 높여 보자.':'기체의 압력이 너무 커. 기체에 작용하는 압력을 낮춰 보자.');return render()}
+if(Math.abs(Vt(n)-V)>.3){q.msg='부피가 멈출 때까지 기다린 뒤 확인하자.';return render()}
+q.pts=Math.max(5,30-5*(q.moves-Math.abs(q.n0-q.m))-5*q.wrong);g.sc+=q.pts;q.res=1;q.f=mkFill('B',q.m>q.n0);render()}
+function render(){const el=$('#game');let h='';
+if(g.mode==='intro'){h=`<p class="q">챌린지 (5문제)</p><p>기체에 작용하는 압력을 바꾸었을 때 일어나는 변화를 예측하고, 직접 추를 조절해 목표를 달성해 보자. 도전할수록 점수가 올라가는지 확인해 보자.</p>${histH()}<button class="pri" data-a="start">도전 시작</button>`}
+else if(g.mode==='end'){const p=hist.length>1?hist[hist.length-2]:null;h=`<p class="hd"><span>${hist.length}번째 도전 끝</span></p><div class="big">${g.sc}점 <small style="font-size:16px;color:var(--sub)">/ 235점</small></div><p>${p===null?'첫 도전 기록이 저장되었어. 다시 도전해서 점수를 올려 보자.':g.sc>p?'지난 도전보다 '+(g.sc-p)+'점 올랐어.':g.sc===p?'지난 도전과 같은 점수야.':'지난 도전보다 '+(p-g.sc)+'점 낮아. 시뮬레이션에서 다시 확인해 보자.'}</p>${histH()}<button class="pri" data-a="start">다시 도전</button>`}
+else{const q=g.q;h=`<div class="hd"><span>${g.r+1} / 5 문제</span><span>점수 ${g.sc}점</span></div>`;
+if(q.t==='P')h+=hP(q);else if(q.t==='S')h+=hS(q);else if(q.t==='A'){h+=`<p class="q">온도와 기체의 양이 일정할 때, 추를 ${q.dd}개 ${q.s>0?'더 올리면':'빼면'} 어떻게 될까?</p><p class="cap">왼쪽에서 직접 추를 ${q.s>0?'올려':'빼'} 보면서 답해 보자.</p>`;
+q.its.forEach((it,ix)=>{if(ix>0&&!q.res&&q.ans[q.its[ix-1].k]===undefined)return;h+=`<div class="it"><span>${it.t}</span><span class="ch">${[1,-1,0].map(v=>{let c='';if(q.res){const cor=it.d(q.s);c=v===cor?'ok':(q.ans[it.k]===v?'no':'')}else if(q.ans[it.k]===v)c='on';return `<button class="${c}" ${q.res?'disabled':''} data-a="ans" data-k="${it.k}" data-v="${v}">${lab[v]}</button>`}).join('')}</span></div>`});
+if(!q.res)h+=`<p><button class="pri" data-a="subA" ${q.its.every(i=>q.ans[i.k]!==undefined)&&n===q.n1?'':'disabled'}>결과 확인하기</button></p>${n===q.n1?'':'<p class="cap">추를 '+q.n1+'개로 맞추고 7단계 모두 답하면 결과를 확인할 수 있어.</p>'}`;
+else{h+=`<div class="fb"><b>+${q.pts}점.</b></div>`+fillH(q,q.its.some(i=>i.k==='mv')?' 입자의 운동성은 온도가 변해야 달라진다.':'')}}
+else{h+=`<p class="q">${q.kind==='vol'?'용기 속 기체의 부피를 '+(+Vt(q.m).toFixed(1))+' mL로 만들어 보자.':'용기 속 기체의 압력을 '+Pe(q.m).toFixed(1)+' 기압으로 만들어 보자.'}</p><p class="cap">왼쪽의 추를 올리거나 빼 보자. 조작 횟수 ${q.moves}회 · 틀린 확인 ${q.wrong}회 (적을수록 높은 점수)</p>`;
+if(q.msg&&!q.res)h+=`<div class="fb">${q.msg}</div>`;
+h+=q.res?`<div class="fb"><b>성공! +${q.pts}점.</b></div>`+fillH(q,''):`<button class="pri" data-a="chk">확인하기</button>`}}
+el.innerHTML=h}
+function mkFill(t,up){let p,a,o;
+if(t==='A'){p=['기체에 작용하는 압력을 '+(up?'높이면':'낮추면')+' 입자 수는 변하지 않지만 기체의 부피는 ','. 따라서 입자 사이의 거리가 ',' 입자들이 용기 벽에 더 ',' 충돌하므로 용기 속 기체의 압력이 '+(up?'커진다':'작아진다')+'.'];a=up?['줄어든다','가까워지고','많이']:['늘어난다','멀어지고','적게'];o=up?['늘어난다','멀어지고','적게']:['줄어든다','가까워지고','많이']}
+else if(t==='S'){p=[(up?'발이 바닥에 닿는 순간 몸무게 때문에':'발을 떼면')+' 공기 주머니에 작용하는 압력이 ',' 공기 주머니의 부피가 ',', 주머니 속 공기의 압력이 ','.'];a=up?['커져','줄어들고','커진다']:['작아져','늘어나고','작아진다'];o=up?['작아져','늘어나고','작아진다']:['커져','줄어들고','커진다']}
+else{p=['기체에 작용하는 압력을 ',' 기체의 부피가 ',', 기체의 압력이 ','. 기체의 압력이 기체에 작용하는 압력과 같아질 때까지 기체의 부피가 변한다.'];a=up?['높이면','줄어들고','커진다']:['낮추면','늘어나고','작아진다'];o=up?['낮추면','늘어나고','작아진다']:['높이면','줄어들고','커진다']}
+return{p,a,b:[null,null,null],bank:sh([...a,...o]),sel:null,done:false,pts:0}}
+function fillH(q,note){const f=q.f;let h='<div class="fb"><b>'+(f.done?'해설 완성!':'해설의 빈칸을 채워 보자. 아래 낱말을 빈칸으로 끌어다 놓아 봐.')+'</b><p class="ex">';
+f.p.forEach((t,i)=>{h+=t;if(i<3){const w=f.b[i],c=f.done?(w===f.a[i]?'ok':'no'):(w?'on':'');h+=`<button class="bl ${c}" data-a="blank" data-i="${i}" ${f.done?'disabled':''}>${w||'\u3000\u3000\u3000'}${f.done&&w!==f.a[i]?' → '+f.a[i]:''}</button>`}});
+h+=(f.done?(note||''):'')+'</p>';
+if(!f.done)h+='<div class="bank">'+f.bank.filter(w=>!f.b.includes(w)).map(w=>`<button class="chip ${f.sel===w?'on':''}" draggable="true" data-a="chip" data-w="${w}">${w}</button>`).join('')+'</div><button class="pri" data-a="fchk" '+(f.b.every(Boolean)?'':'disabled')+'>정답 확인</button>';
+else h+=`<b>빈칸 +${f.pts}점</b>`;
+return h+'</div>'+(f.done?'<button class="pri" data-a="next">다음 문제</button>':'')}
+function place(i,w){const f=g.q.f;if(f.done)return;if(w===undefined){if(f.sel)w=f.sel;else{f.b[i]=null;return render()}}f.b=f.b.map(x=>x===w?null:x);f.b[i]=w;f.sel=null;render()}
+function fchk(){const f=g.q.f;let c=0;f.b.forEach((w,i)=>{if(w===f.a[i])c++});f.pts=c*5;g.sc+=f.pts;f.done=true;render()}
+$('#game').addEventListener('dragstart',e=>{const c=e.target.closest('.chip');if(c)e.dataTransfer.setData('text/plain',c.dataset.w)});
+$('#game').addEventListener('dragover',e=>{if(e.target.closest('.bl:not(:disabled)'))e.preventDefault()});
+$('#game').addEventListener('drop',e=>{const b=e.target.closest('.bl');if(!b)return;e.preventDefault();place(+b.dataset.i,e.dataTransfer.getData('text/plain'))});
+function hP(q){let h=`<p class="q">입자 모형 문제</p><p>일정한 온도에서 주사기 속 공기는 (처음)과 같다. 피스톤을 누를 때 주사기 속 공기 입자의 모습을 가장 알맞게 나타낸 것은?</p><div class="cap">(처음) 입자의 움직임은 화살표로 나타냈어.</div>${syr(120,8,9)}<div class="opt">`;
+h+=q.opts.map((o,i)=>{const c=q.res?(o.k==='ok'?'ok':(q.a===o.k?'no':'')):'';return `<button class="op ${c}" data-a="popt" data-k="${o.k}" ${q.res?'disabled':''}><b>${'가나다라'[i]}</b>${syr(o.P,o.c,o.l)}</button>`}).join('')+'</div>';
+if(q.res)h+=`<div class="fb"><b>${M1[q.a]}+${q.pts}점.</b></div>`+fillH(q,'');
+return h}
+function hS(q){const f=q.foot,ans=f?[1,-1,1]:[-1,1,-1],T=['공기 주머니에 작용하는 압력','공기 주머니의 부피','주머니 속 공기의 압력'];
+let h=`<p class="q">운동화 공기 주머니</p><p>운동화 바닥의 공기 주머니는 걸을 때 모양이 변한다. ${f?'발이 바닥에 닿는 순간':'발을 뗄 때'} 어떻게 될까?</p>${shoe(f)}`;
+T.forEach((t,i)=>{if(i>0&&q.a[i-1]===undefined)return;const d=q.a[i]!==undefined;h+=`<div class="it"><span>${t}</span><span class="ch">${[1,-1,0].map(v=>`<button class="${d?(v===ans[i]?'ok':(q.a[i]===v?'no':'')):''}" ${d?'disabled':''} data-a="sans" data-i="${i}" data-v="${v}">${lab[v]}</button>`).join('')}</span></div>`});
+if(q.res)h+=`<div class="fb"><b>+${q.pts}점.</b></div>`+fillH(q,'');
+return h}
+function popt(k){const q=g.q;if(q.res)return;q.a=k;q.pts=k==='ok'?30:0;g.sc+=q.pts;q.res=1;q.f=mkFill('A',true);render()}
+function sans(i,v){const q=g.q;if(q.a[i]!==undefined)return;q.a[i]=v;if(Object.keys(q.a).length===3){const ans=q.foot?[1,-1,1]:[-1,1,-1];q.pts=[0,1,2].filter(j=>q.a[j]===ans[j]).length*10;g.sc+=q.pts;q.res=1;q.f=mkFill('S',q.foot)}render()}
+function histH(){if(!hist.length)return '';const mx=235;return `<p class="cap">도전 기록</p><div class="hist">${hist.slice(-8).map(v=>`<i data-v="${v}" style="height:${Math.min(62,Math.max(4,v/mx*62))}px"></i>`).join('')}</div>`}
+$('#game').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a,q=g.q;
+if(a==='start'){g.mode='play';g.r=0;g.sc=0;buildDeck();nextQ()}
+else if(a==='ans'){q.ans[b.dataset.k]=+b.dataset.v;render()}
+else if(a==='subA')submitA();else if(a==='chk')checkB();else if(a==='chip'){q.f.sel=q.f.sel===b.dataset.w?null:b.dataset.w;render()}else if(a==='blank')place(+b.dataset.i);else if(a==='fchk')fchk();else if(a==='popt')popt(b.dataset.k);else if(a==='sans')sans(+b.dataset.i,+b.dataset.v);
+else if(a==='next'){g.r++;nextQ()}});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{const t=b.dataset.tab;
+document.querySelectorAll('[data-tab]').forEach(x=>x.setAttribute('aria-selected',x===b));
+$('#sim').hidden=t!=='sim';$('#game').hidden=t!=='game';$('#smp').hidden=t!=='smp';
+if(t==='sim')locked=false;else locked=g.mode==='play'&&!!g.q&&g.q.t==='A'&&!!g.q.res;render()});
+/* ---- 샘플 문제 ---- */
+const PU=[[.15,.2,.8],[.7,.15,2.4],[.4,.5,4.2],[.85,.6,1.2],[.2,.75,5.3],[.6,.85,3.4],[.5,.1,6],[.9,.35,.2]];
+function syr(P,c,len){let s=`<svg viewBox="0 0 230 92" width="100%" role="img" aria-label="주사기 속 공기 입자 모형"><rect x="8" y="8" width="${P-8}" height="76" fill="rgba(170,215,230,.25)" stroke="#5a8294" stroke-width="3"/><rect x="${P}" y="6" width="10" height="80" rx="2" fill="#8b929c"/><rect x="${P+10}" y="40" width="${214-P}" height="12" fill="#b9bec6"/>`;
+for(let i=0;i<c;i++){const p=PU[i],x=14+p[0]*(P-26),y=14+p[1]*62;s+=`<line x1="${x}" y1="${y}" x2="${x+Math.cos(p[2])*len}" y2="${y+Math.sin(p[2])*len}" stroke="#c8283c" stroke-width="1.5"/><circle cx="${x}" cy="${y}" r="4.5" fill="#c8283c"/>`}
+return s+'</svg>'}
+const S1=[{k:'ok',P:80,c:8,l:9},{k:'cnt',P:80,c:5,l:9},{k:'mv',P:80,c:8,l:18},{k:'vol',P:160,c:8,l:9}];
+const M1={ok:'정답! ',cnt:'입자 수는 변하지 않아. 피스톤을 눌러도 주사기 속 공기의 양은 그대로야. ',mv:'온도가 일정하면 입자의 운동성은 변하지 않아. 입자의 운동성은 온도가 변해야 달라져. ',vol:'그 모습은 피스톤을 당길 때야. 피스톤을 누르면 부피가 줄어들어. '};
+let s1=sh(S1),s1a=null;
+function rs1(){let h=`<p class="q">입자 모형 문제</p><p>일정한 온도에서 주사기 속 공기는 (처음)과 같다. 피스톤을 누를 때 주사기 속 공기 입자의 모습을 가장 알맞게 나타낸 것은?</p><div class="cap">(처음) 입자의 움직임은 화살표로 나타냈어.</div>${syr(120,8,9)}<div class="opt">`;
+h+=s1.map((o,i)=>{const c=s1a?(o.k==='ok'?'ok':(s1a===o.k?'no':'')):'';return `<button class="op ${c}" data-k="${o.k}" ${s1a?'disabled':''}><b>${'가나다라'[i]}</b>${syr(o.P,o.c,o.l)}</button>`}).join('')+'</div>';
+if(s1a)h+=`<div class="fb"><b>${M1[s1a]}</b>피스톤을 누르면 입자 수는 변하지 않지만 기체의 부피는 줄어든다. 따라서 입자 사이의 거리가 가까워지고 입자들이 용기 벽에 더 많이 충돌하므로 용기 속 기체의 압력이 커진다.</div><button data-r="1">다시 풀기</button>`;
+$('#s1').innerHTML=h}
+let s2={f:true,a:{}};
+function shoe(f){const h=f?30:62,y=124-h,ay=y-8;let s=`<svg viewBox="0 0 260 150" width="100%" role="img" aria-label="운동화 공기 주머니"><rect x="20" y="124" width="220" height="12" rx="4" fill="#8b929c"/><rect x="40" y="${y}" width="180" height="${h}" rx="14" fill="rgba(170,215,230,.3)" stroke="#5a8294" stroke-width="3"/><rect x="36" y="${ay}" width="188" height="8" rx="3" fill="#d9b277"/>`;
+for(let i=0;i<8;i++){const p=PU[i];s+=`<circle cx="${56+p[0]*148}" cy="${y+9+p[1]*(h-18)}" r="4.5" fill="#c8283c"/>`}
+if(f)s+=`<path d="M130 ${ay-38}v26m-8-8l8 8l8-8" stroke="#58706b" stroke-width="3" fill="none"/><text x="142" y="${ay-24}" font-size="13" fill="#58706b">몸무게</text>`;
+return s+'</svg>'}
+function rs2(){const f=s2.f,ans=f?[1,-1,1]:[-1,1,-1],T=['공기 주머니에 작용하는 압력','공기 주머니의 부피','주머니 속 공기의 압력'];
+let h=`<p class="q">운동화 공기 주머니</p><p>운동화 바닥의 공기 주머니는 걸을 때 발이 바닥에 닿았다 떨어질 때마다 변한다. 장면을 고르고, 어떻게 되는지 순서대로 답해 보자.</p><div class="ctl"><button class="${f?'pri':''}" data-sc="1">발이 바닥에 닿는 순간</button><button class="${f?'':'pri'}" data-sc="0">발을 뗄 때</button></div>${shoe(f)}`;
+T.forEach((t,i)=>{if(i>0&&s2.a[i-1]===undefined)return;const d=s2.a[i]!==undefined;h+=`<div class="it"><span>${i+1}단계 ${t}</span><span class="ch">${[1,-1,0].map(v=>`<button class="${d?(v===ans[i]?'ok':(s2.a[i]===v?'no':'')):''}" ${d?'disabled':''} data-q="${i}" data-v="${v}">${lab[v]}</button>`).join('')}</span></div>`});
+if(s2.a[2]!==undefined)h+=`<div class="fb">${f?'발이 닿는 순간 몸무게 때문에 공기 주머니에 작용하는 압력이 커져 공기 주머니의 부피가 줄어들고, 주머니 속 공기의 압력이 커진다.':'발을 떼면 공기 주머니에 작용하는 압력이 작아져 공기 주머니의 부피가 늘어나고, 주머니 속 공기의 압력이 작아진다.'}</div>`;
+$('#s2').innerHTML=h}
+$('#smp').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+if(b.dataset.k){s1a=b.dataset.k;rs1()}else if(b.dataset.r){s1=sh(S1);s1a=null;rs1()}else if(b.dataset.sc!==undefined){s2.f=b.dataset.sc==='1';s2.a={};rs2()}else if(b.dataset.q!==undefined){s2.a[+b.dataset.q]=+b.dataset.v;rs2()}});
+rs1();rs2();
+render();ui();requestAnimationFrame(frame);
+</script></body></html>
